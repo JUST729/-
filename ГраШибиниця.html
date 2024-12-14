@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гра "Шибениця"</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #111, #333);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        h1 {
+            font-size: 3em;
+            color: #ff4d4d;
+        }
+        .start-button {
+            margin-top: 2em;
+            padding: 1em 2em;
+            font-size: 1.5em;
+            color: #fff;
+            background-color: #ff4d4d;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .game-progress {
+            font-size: 1.8em;
+            margin-top: 1em;
+            color: #ffcc00;
+        }
+        .game-result {
+            font-size: 1.5em;
+            color: #fff;
+            margin-top: 1em;
+            display: none;
+        }
+        .guessed-letters {
+            font-size: 1.5em;
+            color: #00ffcc;
+            margin-top: 1em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Гра "Шибениця"</h1>
+    <button class="start-button" onclick="startGame()">Почати гру</button>
+    <div class="game-progress" id="gameProgress">Натисніть "Почати гру"!</div>
+    <div class="guessed-letters" id="guessedLetters">Вгадані літери: </div>
+    <div class="game-result" id="gameResult"></div>
+
+    <script>
+        const words = ['книга', 'комп\'ютер', 'автомобіль', 'будинок', 'птах'];
+        let chosenWord, displayedWord, attempts, guessedLetters;
+        const maxAttempts = 6;
+
+        function startGame() {
+            attempts = 0;
+            guessedLetters = [];
+            document.getElementById("gameResult").style.display = 'none';
+            document.getElementById("guessedLetters").textContent = 'Вгадані літери: ';
+            chosenWord = words[Math.floor(Math.random() * words.length)];
+            displayedWord = Array(chosenWord.length).fill('_').join(' ');
+
+            console.clear(); // Очищаємо консоль на початку гри
+            console.log(`Починаємо нову гру! Загадане слово: ${chosenWord}`);
+            updateGameProgress();
+            promptUser();
+        }
+
+        function updateGameProgress() {
+            console.log(`Поточний стан слова: ${displayedWord}`);
+            document.getElementById("gameProgress").textContent = `Слово: ${displayedWord}`;
+        }
+
+        function updateGuessedLetters() {
+            document.getElementById("guessedLetters").textContent = `Вгадані літери: ${guessedLetters.join(', ')}`;
+        }
+
+        function promptUser() {
+            const guess = prompt(`Вгадане слово: ${displayedWord}\nЗалишилось спроб: ${maxAttempts - attempts}\nВведіть літеру:`);
+
+            if (guess === null) {
+                alert('Гру завершено!');
+                console.log('Гравець завершив гру.');
+                return;
+            }
+
+            if (guess.length === 1 && /^[a-zA-Zа-яА-Я]$/.test(guess)) {
+                console.log(`Гравець ввів літеру: ${guess}`);
+                checkGuess(guess.toLowerCase());
+            } else {
+                alert('Введіть лише одну літеру.');
+                console.log('Гравець ввів некоректний символ.');
+                promptUser();
+            }
+        }
+
+        function checkGuess(letter) {
+            if (guessedLetters.includes(letter)) {
+                alert('Цю літеру ви вже вгадали!');
+                console.log(`Літера "${letter}" вже вгадана.`);
+                promptUser();
+                return;
+            }
+
+            guessedLetters.push(letter);
+            updateGuessedLetters();
+
+            let isCorrect = false;
+            let newDisplayedWord = displayedWord.split(' ');
+
+            for (let i = 0; i < chosenWord.length; i++) {
+                if (chosenWord[i] === letter && newDisplayedWord[i] === '_') {
+                    newDisplayedWord[i] = letter;
+                    isCorrect = true;
+                }
+            }
+
+            displayedWord = newDisplayedWord.join(' ');
+
+            if (!isCorrect) {
+                attempts++;
+                console.log(`Літера "${letter}" не знайдена. Залишилось спроб: ${maxAttempts - attempts}`);
+            } else {
+                console.log(`Літера "${letter}" знайдена!`);
+            }
+
+            updateGameProgress();
+
+            if (displayedWord.replace(/ /g, '') === chosenWord) {
+                endGame('Перемога! Ви відгадали слово!');
+            } else if (attempts >= maxAttempts) {
+                endGame(`Програш! Ви не відгадали слово. Слово було: ${chosenWord}`);
+            } else {
+                promptUser();
+            }
+        }
+
+        function endGame(message) {
+            console.log(message);
+            document.getElementById("gameResult").textContent = message;
+            document.getElementById("gameResult").style.display = 'block';
+        }
+    </script>
+</body>
+</html>
